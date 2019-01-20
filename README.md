@@ -33,7 +33,7 @@ kind: Secret
 metadata:
   name: aws-credentials-for-ecr
 type: Opaque
-data:
+stringData:
   aws-access-key-id: $AWS_ACCESS_KEY_ID
   aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
 EOF
