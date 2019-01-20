@@ -1,0 +1,48 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: aws-registry-credential-cron
+spec:
+  schedule: {{ .Values.schedule }}
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2  
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          serviceAccountName: {{ .Values.serviceAccountName }}
+          terminationGracePeriodSeconds: 0
+          restartPolicy: Never
+          containers:
+          - name: kubectl
+            imagePullPolicy: IfNotPresent
+            image: fangpenlin/aws-kubectl:0.0.0
+            env:
+              - name: AWS_ACCOUNT
+                value: {{ required "Value .Values.aws.aws_account is required" .Values.aws.aws_account }}
+              - name: AWS_REGION
+                value: {{ required "Value .Values.aws.aws_region is required" .Values.aws.aws_region }}
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Release.Name }}
+                    key: aws_access_key_id
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Release.Name }}
+                    key: aws_secret_access_key
+              - name: DOCKER_USER
+                value: AWS
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
+              kubectl delete secret aws-registry || true
+              kubectl create secret docker-registry aws-registry \
+                --docker-username=$DOCKER_USER \
+                --docker-password=$DOCKER_PASSWORD \
+                --docker-email=none
+              kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
