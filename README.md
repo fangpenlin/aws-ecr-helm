@@ -14,6 +14,16 @@ metadata:
 EOF
 ```
 
+Then set permission to the account
+
+```shell
+kubectl create clusterrolebinding aws-ecr-agent-cluster-admin \
+  --clusterrole=cluster-admin \
+  --serviceaccount=default:aws-ecr-agent
+```
+
+# TODO: should not use cluster-admin I guess
+
 Then create a secret for AWS user which has AWS ECR permissions:
 
  - ecr:GetAuthorizationToken
