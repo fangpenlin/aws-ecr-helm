@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: aws-registry-credential-cron
+  name: {{ .Release.Name }}
 spec:
   schedule: {{ .Values.schedule }}
   successfulJobsHistoryLimit: 2
@@ -26,13 +26,13 @@ spec:
               - name: AWS_ACCESS_KEY_ID
                 valueFrom:
                   secretKeyRef:
-                    name: {{ .Release.Name }}
-                    key: aws_access_key_id
+                    name: {{ required "Value .Values.aws.secret_name is required" .Values.aws.secret_name }}
+                    key: aws-access-key-id
               - name: AWS_SECRET_ACCESS_KEY
                 valueFrom:
                   secretKeyRef:
-                    name: {{ .Release.Name }}
-                    key: aws_secret_access_key
+                    name: {{ required "Value .Values.aws.secret_name is required" .Values.aws.secret_name }}
+                    key: aws-secret-access-key
               - name: DOCKER_USER
                 value: AWS
             command:

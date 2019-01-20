@@ -1,7 +1,7 @@
 # Default values for aws-ecr-helm.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
-aws: {}
-serviceAccountName: ""
+aws:
+  secret_name: aws-credentials-for-ecr
+serviceAccountName: aws-ecr-agent
 schedule: "* */8 * * *"
