@@ -1,6 +1,8 @@
 # aws-ecr-helm
 Helm chart for updating AWS ECR secret periodically
 
+Based on this article: [Keeping AWS Registry pull credentials fresh in Kubernetes](https://medium.com/@xynova/keeping-aws-registry-pull-credentials-fresh-in-kubernetes-2d123f581ca6)
+
 ## Setup
 
 You need to create a service account first
