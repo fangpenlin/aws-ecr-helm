@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: {{ .Release.Name }}
 spec:
-  schedule: {{ .Values.schedule }}
+  schedule: {{ .Values.schedule | quote }}
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2  
   jobTemplate:
@@ -20,9 +20,9 @@ spec:
             image: fangpenlin/aws-kubectl:0.0.0
             env:
               - name: AWS_ACCOUNT
-                value: {{ required "Value .Values.aws.aws_account is required" .Values.aws.aws_account }}
+                value: {{ required "Value .Values.aws.aws_account is required" .Values.aws.aws_account | quote }}
               - name: AWS_REGION
-                value: {{ required "Value .Values.aws.aws_region is required" .Values.aws.aws_region }}
+                value: {{ required "Value .Values.aws.aws_region is required" .Values.aws.aws_region | quote }}
               - name: AWS_ACCESS_KEY_ID
                 valueFrom:
                   secretKeyRef:

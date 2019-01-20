@@ -38,3 +38,11 @@ stringData:
   aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
 EOF
 ```
+
+To install with helm
+
+```shell
+helm install --name aws-ecr-agent \
+    --set-string aws.aws_account=$AWS_ACCOUNT \
+    --set aws.aws_region=$AWS_REGION .
+```
