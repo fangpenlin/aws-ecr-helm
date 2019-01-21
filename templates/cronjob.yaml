@@ -33,7 +33,7 @@ spec:
                   secretKeyRef:
                     name: {{ required "Value .Values.aws.secret_name is required" .Values.aws.secret_name }}
                     key: aws-secret-access-key
-              - name: DOCKER_USER
+              - name: DOCKER_LOGIN
                 value: AWS
             command:
             - "/bin/sh"
@@ -44,7 +44,7 @@ spec:
               kubectl delete secret aws-registry || true
               kubectl create secret docker-registry aws-registry \
                 --docker-server=$DOCKER_REGISTRY_SERVER \
-                --docker-username=$DOCKER_USER \
+                --docker-username=$DOCKER_LOGIN \
                 --docker-password=$DOCKER_PASSWORD \
                 --docker-email=none
               kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
