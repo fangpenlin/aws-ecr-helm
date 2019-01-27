@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}"
+  labels:
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/instance: {{.Release.Name | quote }}
+    helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{.Release.Name}}"
+      labels:
+        app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+        app.kubernetes.io/instance: {{.Release.Name | quote }}
+        helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: kubectl
+        imagePullPolicy: IfNotPresent
+        image: fangpenlin/aws-kubectl:0.0.0
+        env:
+          - name: AWS_ACCOUNT
+            value: {{ required "Value .Values.aws.aws_account is required" .Values.aws.aws_account | quote }}
+          - name: AWS_REGION
+            value: {{ required "Value .Values.aws.aws_region is required" .Values.aws.aws_region | quote }}
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ required "Value .Values.aws.secret_name is required" .Values.aws.secret_name }}
+                key: aws-access-key-id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ required "Value .Values.aws.secret_name is required" .Values.aws.secret_name }}
+                key: aws-secret-access-key
+          - name: DOCKER_LOGIN
+            value: AWS
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
+          DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          kubectl delete secret aws-registry || true
+          kubectl create secret docker-registry aws-registry \
+            --docker-server=$DOCKER_REGISTRY_SERVER \
+            --docker-username=$DOCKER_LOGIN \
+            --docker-password=$DOCKER_PASSWORD \
+            --docker-email=none
+          kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
