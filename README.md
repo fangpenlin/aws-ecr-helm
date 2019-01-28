@@ -5,28 +5,7 @@ Based on this article: [Keeping AWS Registry pull credentials fresh in Kubernete
 
 ## Setup
 
-You need to create a service account first
-
-```shell
-kubectl create -f - <<EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: aws-ecr-agent
-EOF
-```
-
-Then set permission to the account
-
-```shell
-kubectl create clusterrolebinding aws-ecr-agent-cluster-admin \
-  --clusterrole=cluster-admin \
-  --serviceaccount=default:aws-ecr-agent
-```
-
-# TODO: should not use cluster-admin I guess
-
-Then create a secret for AWS user which has AWS ECR permissions:
+Create a secret for AWS user which has AWS ECR permissions:
 
  - ecr:GetAuthorizationToken
  - ecr:BatchCheckLayerAvailability
