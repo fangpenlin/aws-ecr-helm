@@ -41,16 +41,22 @@ spec:
                     key: aws-secret-access-key
               - name: DOCKER_LOGIN
                 value: AWS
+              - name: NAMESPACES
+                value: {{ join "," .Values.namespaces | quote }}
             command:
             - "/bin/sh"
             - "-c"
             - |
               DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
               DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
-              kubectl delete secret aws-registry || true
-              kubectl create secret docker-registry aws-registry \
-                --docker-server=$DOCKER_REGISTRY_SERVER \
-                --docker-username=$DOCKER_LOGIN \
-                --docker-password=$DOCKER_PASSWORD \
-                --docker-email=none
-              kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
+              # ref: https://stackoverflow.com/a/918931/25077
+              IFS=',' read -ra NS <<< "$NAMESPACE"
+              for n in "${NS[@]}"; do
+                kubectl delete -n $n secret aws-registry || true
+                kubectl create -n $n secret docker-registry aws-registry \
+                  --docker-server=$DOCKER_REGISTRY_SERVER \
+                  --docker-username=$DOCKER_LOGIN \
+                  --docker-password=$DOCKER_PASSWORD \
+                  --docker-email=none
+                kubectl patch -n $n serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
+              done
