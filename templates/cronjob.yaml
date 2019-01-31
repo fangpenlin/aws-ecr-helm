@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "aws-ecr.fullname" . }}
 spec:
   schedule: {{ .Values.schedule | quote }}
   successfulJobsHistoryLimit: 2
@@ -10,6 +10,12 @@ spec:
     spec:
       backoffLimit: 4
       template:
+        metadata:
+          name: {{ include "aws-ecr.fullname" . }}
+          labels:
+            app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+            app.kubernetes.io/instance: {{.Release.Name | quote }}
+            helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
         spec:
           serviceAccountName: {{ .Values.serviceAccountName }}
           terminationGracePeriodSeconds: 0
