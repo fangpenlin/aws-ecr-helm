@@ -62,7 +62,7 @@ Create container spec for updating AWS ECR secret
   - "-c"
   - |
     DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
-    DOCKER_REGISTRY_SERVER=${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+    DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
     # ref: https://stackoverflow.com/a/27703327/25077
     for n in $(echo $NAMESPACES | sed "s/,/ /g")
     do
@@ -71,7 +71,7 @@ Create container spec for updating AWS ECR secret
         --docker-server=$DOCKER_REGISTRY_SERVER \
         --docker-username=$DOCKER_LOGIN \
         --docker-password=$DOCKER_PASSWORD \
-        --docker-email=none
+        --docker-email=none@email.local
       kubectl patch -n $n serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
     done
 {{- end -}}
