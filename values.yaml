@@ -5,5 +5,5 @@ aws:
   secret_name: aws-credentials-for-ecr
 serviceAccountName: aws-ecr-agent
 schedule: "* */8 * * *"
-namespaces:
-  - default
+targetServiceAccounts:
+  - default/default
