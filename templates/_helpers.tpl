@@ -61,6 +61,7 @@ Create container spec for updating AWS ECR secret
   - "/bin/sh"
   - "-c"
   - |
+    set -e
     DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
     DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
     # ref: https://stackoverflow.com/a/27703327/25077
